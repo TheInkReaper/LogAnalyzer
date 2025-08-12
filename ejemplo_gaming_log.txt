@@ -1,0 +1,33 @@
+2025-08-12T14:30:01Z - INFO: Game Launcher v1.5.2 initialized.
+2025-08-12T14:30:02Z - INFO: Checking for updates...
+2025-08-12T14:30:03Z - INFO: No new updates found.
+2025-08-12T14:30:05Z - INFO: Starting game: CyberVenture 2088.
+2025-08-12T14:30:06Z - INFO: Loading user profile 'TheInkReaper'.
+2025-08-12T14:30:08Z - INFO: Initializing graphics engine: DirectX 12.
+2025-08-12T14:30:09Z - INFO: Detected GPU: NVIDIA GeForce RTX 4080.
+2025-08-12T14:30:10Z - WARNING: Graphics driver version 525.33 is outdated. Consider updating for optimal performance.
+2025-08-12T14:30:11Z - INFO: Loading main menu assets...
+2025-08-12T14:30:12Z - INFO: Initializing audio engine...
+2025-08-12T14:30:14Z - INFO: Initializing network subsystem...
+2025-08-12T14:30:15Z - INFO: Connecting to matchmaking services...
+2025-08-12T14:30:17Z - INFO: Connection successful.
+2025-08-12T14:30:18Z - ERROR: Connection to friends service failed. Fallo en el intento de conexión.
+2025-08-12T14:30:18Z - INFO: Proceeding in offline mode.
+2025-08-12T14:30:20Z - INFO: User clicked 'Continue Game'. Loading save file 'savegame_04.sav'.
+2025-08-12T14:30:21Z - INFO: Loading world data...
+2025-08-12T14:30:22Z - ERROR: Failed to write to savegame file. HRESULT: 0x80070005 (Access Denied). Check folder permissions.
+2025-08-12T14:30:24Z - WARNING: Optional cosmetic file 'cosmetics/player_jacket_led.dat' not found. This is not critical.
+2025-08-12T14:30:25Z - ERROR: Could not load texture file 'data/textures/vehicles/quadra_v-tech_decals.dds'. File not found.
+2025-08-12T14:30:25Z - INFO: Substituting with placeholder texture.
+2025-08-12T14:30:28Z - INFO: Initializing physics engine...
+2025-08-12T14:30:30Z - WARNING: High memory usage detected: 14.8 GB / 16.0 GB. Game may experience slow downs.
+2025-08-12T14:30:32Z - INFO: World loaded. Player spawned at coordinates (1024, -512, 78).
+2025-08-12T14:30:45Z - INFO: Player entered combat.
+2025-08-12T14:30:55Z - ERROR: AI script 'npc_arasaka_netrunner.lua' failed to execute.
+2025-08-12T14:31:02Z - WARNING: Network latency spike detected. Timeout possible.
+2025-08-12T14:31:05Z - CRITICAL: Unhandled exception caught!
+2025-08-12T14:31:05Z - CRITICAL: Exception code: 0xc0000005 (ACCESS_VIOLATION) at memory address 0x00007FF6A4B8D1C0.
+2025-08-12T14:31:05Z - CRITICAL: The thread tried to read from or write to a virtual address for which it does not have the appropriate access.
+2025-08-12T14:31:06Z - INFO: Generating crash dump...
+2025-08-12T14:31:07Z - INFO: Crash dump saved to C:\Users\TheInkReaper\AppData\Local\CyberVenture\crash_dumps\
+2025-08-12T14:31:08Z - INFO: Shutting down application.

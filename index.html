@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Analyzer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%233b82f6' d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM2 2h10v2H2V2zm0 4h10v2H2V6zm0 4h6v2H2v-2z'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bg-color: #111827; --card-color: #1f2937; --border-color: #374151; --text-color: #d1d5db; --text-color-light: #9ca3af; --accent-color: #3b82f6; --error-color: #f87171; --warning-color: #fbbf24; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); font-size: 14px; }
+        .nav-button.active { background-color: var(--border-color); color: #ffffff; border-left-width: 4px; border-color: var(--accent-color); }
+        .info-card { background-color: var(--card-color); border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border-color); }
+        .info-card h3 { color: #60a5fa; font-weight: 600; margin-bottom: 0.75rem; }
+        .info-card code { background-color: var(--border-color); padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #e5e7eb; }
+        #log-output, #live-log-output { white-space: pre-wrap; word-wrap: break-word; font-family: 'Menlo', 'Courier New', Courier, monospace; font-size: 13px; background-color: var(--card-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; max-height: 45vh; overflow-y: auto; }
+        .log-line-error { background-color: rgba(239, 68, 68, 0.1); color: var(--error-color); }
+        .log-line-warning { background-color: rgba(251, 191, 36, 0.1); color: var(--warning-color); }
+        #drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; transition: all 0.3s ease; }
+        #drop-zone.dragover { border-color: var(--accent-color); background-color: var(--border-color); }
+        .clickable-link { color: var(--accent-color); text-decoration: underline; cursor: pointer; }
+    </style>
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body class="flex h-screen">
+
+    <nav class="w-64 bg-gray-800 p-4 space-y-2 flex flex-col flex-shrink-0">
+        <h1 class="text-xl font-bold text-white mb-6 flex items-center">
+            <svg class="w-8 h-8 mr-3 text-blue-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z" fill="currentColor"/>
+                <path d="M2 2H12V4H2V2Z" fill="currentColor"/>
+                <path d="M2 6H12V8H2V6Z" fill="currentColor"/>
+                <path d="M2 10H8V12H2V10Z" fill="currentColor"/>
+            </svg>
+            <span>Log Analyzer</span>
+        </h1>
+        <button onclick="showTab('welcome')" class="nav-button active w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-home w-6 mr-2"></i>Primeros Pasos</button>
+        <button onclick="showTab('analyzer')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-file-alt w-6 mr-2"></i>Analizar Logs</button>
+        <button onclick="showTab('info')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-info-circle w-6 mr-2"></i>Guía de Logs</button>
+        <button onclick="showTab('crash-log')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-biohazard w-6 mr-2"></i>Diagnosticar un Crash</button>
+        <button onclick="showTab('resources')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-book w-6 mr-2"></i>Recursos Útiles</button>
+        <div class="flex-grow"></div>
+        <div class="text-xs text-gray-500 text-center"><p>por TheInkReaper</p></div>
+    </nav>
+
+    <main class="flex-1 p-6 overflow-y-auto bg-gray-900">
+        
+        <div id="welcome" class="tab-content">
+            <h2 class="text-2xl font-bold text-white mb-4">Bienvenido a Log Analyzer</h2>
+            <p class="text-gray-400 mb-6">Herramienta de diagnóstico para ayudarte a solucionar problemas en tu PC.</p>
+            <div class="info-card">
+                <h3 class="text-lg">¿Qué problema tienes?</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <button onclick="showTab('info', 'bsod-section')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>Pantallazo Azul (BSOD)</strong><br><span class="text-sm text-gray-400">El PC se reinicia con una pantalla azul.</span></button>
+                    <button onclick="showTab('crash-log')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>Un juego o programa se cierra</strong><br><span class="text-sm text-gray-400">La aplicación falla inesperadamente.</span></button>
+                    <button onclick="showTab('info', 'system-section')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>PC lento o fallos de actualización</strong><br><span class="text-sm text-gray-400">Problemas de rendimiento o con Windows Update.</span></button>
+                    <button onclick="showTab('analyzer')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>Ya tengo un archivo de log</strong><br><span class="text-sm text-gray-400">Ir directamente al analizador.</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="info" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-white mb-6">Guía para Encontrar Archivos de Log</h2>
+            <div class="space-y-6 text-gray-300">
+                 <div id="app-section" class="info-card">
+                    <h3 class="text-lg">Visor de Eventos de Windows</h3>
+                    <p class="mb-4">Es la fuente principal para errores de aplicaciones. Para usar sus logs aquí, necesitas exportarlos:</p>
+                    <ol class="list-decimal list-inside space-y-2 mb-4">
+                        <li>Abre el Visor de Eventos (<code>Win + R</code> y escribe <code>eventvwr.msc</code>).</li>
+                        <li>En <strong>Registros de Windows > Aplicación</strong>, ve a Acciones > <strong>"Filtrar registro actual..."</strong>. Marca <strong>Crítico</strong>, <strong>Error</strong> y <strong>Advertencia</strong>.</li>
+                        <li>Clic derecho en "Aplicación" > <strong>"Guardar eventos filtrados como..."</strong> y elige el tipo <strong>"Texto (delimitado por tabulaciones) (*.txt)"</strong>.</li>
+                    </ol>
+                    <p class="mb-2"><strong>Tipos de Errores:</strong> A menudo verás errores que empiezan por <code>0x8...</code> (HRESULT) o <code>0xc...</code> (NTSTATUS). Nuestra herramienta los detecta y te ofrece el enlace de búsqueda más adecuado para cada uno.</p>
+                </div>
+                <div class="info-card">
+                    <h3 class="text-lg">Logs de Juegos (Steam y otros)</h3>
+                    <p class="mb-2">Si el problema es con un juego específico, busca sus propios archivos de log. Suelen estar en la carpeta de instalación del juego o en `Mis Documentos`.</p>
+                    <p>Para encontrar la carpeta de un juego de Steam: en tu Biblioteca, haz clic derecho sobre el juego > Propiedades > Archivos instalados > Explorar. Busca carpetas como `Logs`, `Crash` o `Saved`.</p>
+                </div>
+                 <div id="bsod-section" class="info-card">
+                    <h3 class="text-lg">Pantallazos Azules (BSOD)</h3>
+                    <p class="mb-2">Un pantallazo azul crea un archivo de diagnóstico llamado <strong>Minidump</strong> (<code>.dmp</code>), que es la clave para saber qué falló.</p>
+                    <p class="mb-2"><strong>Ubicación:</strong> <code>C:\Windows\Minidump</code>.</p>
+                    <p><strong>Importante:</strong> Los archivos <code>.dmp</code> no son de texto y no se pueden usar en este analizador. Necesitas una herramienta externa como las recomendadas en "Recursos Útiles".</p>
+                </div>
+                <div id="system-section" class="info-card">
+                    <h3 class="text-lg">Logs Críticos del Sistema</h3>
+                    <p class="mb-4">Para problemas serios, Windows guarda logs de texto que puedes arrastrar a este analizador.</p>
+                    <ul class="list-disc list-inside space-y-3">
+                        <li><strong>Instalación/Actualización (Panther):</strong><br>
+                            <span class="text-sm text-gray-400">Úsalo si Windows falla al instalarse o durante una gran actualización.</span><br>
+                            Ruta: <code>C:\Windows\Panther\</code> (Archivo: <code>setuperr.log</code>).
+                        </li>
+                        <li><strong>Componentes y Drivers (CBS):</strong><br>
+                            <span class="text-sm text-gray-400">Úsalo si falla Windows Update, `sfc /scannow`, o sospechas de un archivo de sistema corrupto.</span><br>
+                            Ruta: <code>C:\Windows\Logs\CBS\</code> (Archivo: <code>CBS.log</code>).
+                        </li>
+                        <li><strong>Reparación de imagen (DISM):</strong><br>
+                            <span class="text-sm text-gray-400">Úsalo para ver el informe detallado de una operación de DISM, sobre todo si falla.</span><br>
+                            Ruta: <code>C:\Windows\Logs\DISM\</code> (Archivo: <code>dism.log</code>).
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="analyzer" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-white mb-4">Analizador de Logs</h2>
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div id="drop-zone" class="mb-4">
+                    <p class="text-gray-400">Arrastra y suelta un archivo de log aquí</p>
+                    <p class="text-sm text-gray-500 my-2">o</p>
+                    <input type="file" id="log-file" class="hidden">
+                    <label for="log-file" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg cursor-pointer">Selecciona un archivo</label>
+                </div>
+                <textarea id="paste-zone" class="w-full h-24 bg-gray-900 border border-gray-700 rounded-lg p-2 mb-4 text-sm" placeholder="... o pega el texto del log aquí"></textarea>
+                
+                <div class="flex items-center space-x-6 mb-4">
+                    <p class="text-sm font-medium text-gray-300">Opciones:</p>
+                    <div class="flex items-center"><input id="filter-highlight" type="radio" value="highlight" name="filter-option" class="w-4 h-4" checked><label for="filter-highlight" class="ml-2">Resaltar Errores/Warnings</label></div>
+                    <div class="flex items-center"><input id="filter-only" type="radio" value="only" name="filter-option" class="w-4 h-4"><label for="filter-only" class="ml-2">Mostrar solo Errores/Warnings</label></div>
+                </div>
+
+                <div id="log-output" class="min-h-[200px]"><p class="text-gray-500">El contenido del log aparecerá aquí...</p></div>
+                
+                <div id="summary-section" class="mt-4 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-white">Resumen de Hallazgos</h3>
+                        <button id="copy-summary-btn" class="text-sm bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded-lg"><i class="fas fa-copy mr-2"></i>Copiar</button>
+                    </div>
+                    <div id="context-info" class="text-xs text-gray-400 mb-2"></div>
+                    <div id="summary-output" class="p-4 bg-gray-900 rounded-lg space-y-2 text-sm"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="crash-log" class="tab-content hidden">
+             <h2 class="text-2xl font-bold text-white mb-4">Diagnosticar un Crash</h2>
+             <div class="space-y-6">
+                <div class="info-card">
+                    <h3 class="text-lg">Opción 1: Simulación de Captura</h3>
+                    <p class="mb-4 text-sm">Esta herramienta simula la captura de un log en tiempo real. Es útil para entender cómo se ve un log, pero **no captura el error real de tu sistema**.</p>
+                    <div class="flex space-x-4 mb-4">
+                        <button id="start-monitoring" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"><i class="fas fa-play mr-2"></i>Iniciar</button>
+                        <button id="stop-monitoring" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center" disabled><i class="fas fa-stop mr-2"></i>Detener</button>
+                    </div>
+                    <div id="live-log-output" class="min-h-[150px]"></div>
+                    <div id="monitoring-status" class="mt-4 p-3 bg-gray-900 rounded-lg font-semibold text-amber-400">Estado: Inactivo</div>
+                </div>
+                <div class="info-card">
+                    <h3 class="text-lg">Opción 2: Obtener el Informe de Crash Real (Recomendado)</h3>
+                    <p class="mb-4">Cuando un programa falla, Windows lo registra. Esta es la forma de encontrar la información más valiosa.</p>
+                    <ol class="list-decimal list-inside space-y-3">
+                        <li><strong>Justo después del crash</strong>, abre el Visor de Eventos (<code>Win + R</code> y escribe <code>eventvwr.msc</code>).</li>
+                        <li>Ve a <strong>Registros de Windows > Aplicación</strong> y busca el evento más reciente marcado como <strong>"Error"</strong>.</li>
+                        <li>En el panel de abajo, busca estas dos líneas:
+                            <ul class="list-disc list-inside ml-6 mt-2 bg-gray-900 p-3 rounded-md">
+                                <li><strong>Nombre de la aplicación con errores:</strong> El programa que se cerró (ej. <code>Cyberpunk2077.exe</code>).</li>
+                                <li><strong>Nombre del módulo con errores:</strong> El archivo que causó el fallo (ej. <code>nvwgf2umx.dll</code>, que apunta a un driver de Nvidia).</li>
+                            </ul>
+                        </li>
+                        <li>Usa el <strong>nombre del módulo</strong> y el <strong>código de excepción</strong> para buscar una solución en internet.</li>
+                    </ol>
+                </div>
+             </div>
+        </div>
+
+        <div id="resources" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-white mb-6">Recursos y Herramientas Útiles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="info-card">
+                    <h3 class="text-lg">Herramientas de Diagnóstico (Gratuitas)</h3>
+                    <p class="mb-3">Aplicaciones seguras y portátiles para un análisis más profundo.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong>BlueScreenView:</strong> Lee los archivos Minidump (<code>.dmp</code>) de pantallazos azules y te dice qué driver causó el fallo.</li>
+                        <li><strong>Autoruns:</strong> Muestra todo lo que arranca con tu PC y permite desactivar elementos para solucionar conflictos.</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3 class="text-lg">Webs de Consulta</h3>
+                     <p class="mb-3">Usa estas webs para buscar soluciones a problemas específicos.</p>
+                    <div class="space-y-2">
+                        <a href="https://www.hresult.info/" target="_blank" class="block hover:text-white"><strong>hresult.info:</strong> Buscador para errores que empiezan por `0x8...` (HRESULT).</a>
+                        <a href="https://www.pcgamingwiki.com/wiki/Home" target="_blank" class="block hover:text-white"><strong>PCGamingWiki:</strong> La enciclopedia para arreglar juegos de PC.</a>
+                        <a href="https://es.ifixit.com/" target="_blank" class="block hover:text-white"><strong>iFixit:</strong> Guías de reparación para hardware y software.</a>
+                        <a href="https://answers.microsoft.com/" target="_blank" class="block hover:text-white"><strong>Microsoft Community:</strong> Foro oficial para buscar errores de Windows.</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab-content');
+        const navButtons = document.querySelectorAll('.nav-button');
+        function showTab(tabId, sectionId = null) {
+            tabs.forEach(tab => tab.id === tabId ? tab.classList.remove('hidden') : tab.classList.add('hidden'));
+            navButtons.forEach(button => button.getAttribute('onclick').includes(`'${tabId}'`) ? button.classList.add('active') : button.classList.remove('active'));
+            if (sectionId) {
+                document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('log-file');
+        const pasteZone = document.getElementById('paste-zone');
+        const logOutput = document.getElementById('log-output');
+        const filterOptions = document.querySelectorAll('input[name="filter-option"]');
+        const summarySection = document.getElementById('summary-section');
+        const summaryOutput = document.getElementById('summary-output');
+        const copySummaryBtn = document.getElementById('copy-summary-btn');
+        const contextInfo = document.getElementById('context-info');
+        let currentLogContext = { text: '', filename: '' };
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        pasteZone.addEventListener('paste', (e) => setTimeout(() => handleText(e.target.value), 0));
+        pasteZone.addEventListener('blur', (e) => e.target.value && handleText(e.target.value));
+        filterOptions.forEach(radio => radio.addEventListener('change', () => currentLogContext.text && analyzeLog(currentLogContext.text, currentLogContext.filename)));
+        copySummaryBtn.addEventListener('click', copySummary);
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => handleText(e.target.result, file.name);
+            reader.readAsText(file);
+        }
+
+        function handleText(text, filename = 'pasted_text.txt') {
+            currentLogContext = { text, filename };
+            pasteZone.value = text;
+            analyzeLog(text, filename);
+        }
+
+        function detectProgramContext(text, filename) {
+            if (filename && !['log.txt', 'pasted_text.txt', 'debug.log'].includes(filename.toLowerCase())) {
+                return filename.split('.').slice(0, -1).join('.');
+            }
+            const contextKeywords = [
+                /Starting game: (.*?)$/im,
+                /Initializing application: (.*?)$/im,
+                /Launcher for (.*?)$/im,
+                /Loading user profile '(.*?)'/im
+            ];
+            for (const regex of contextKeywords) {
+                const match = text.match(regex);
+                if (match && match[1]) return match[1].trim();
+            }
+            return 'windows';
+        }
+
+        function analyzeLog(text, filename) {
+            const filterType = document.querySelector('input[name="filter-option"]:checked').value;
+            const lines = text.split('\n');
+            let outputHtml = '';
+            const findings = {};
+            const programContext = detectProgramContext(text, filename);
+            contextInfo.textContent = `Contexto detectado: ${programContext}`;
+
+            const errorKeywords = /\b(error|fail|critical|exception|denied|refused|fallo|fehler|erreur)\b/i;
+            const warningKeywords = /\b(warning|warn|deprecated|timeout|slow|could not|advertencia|achtung|avertissement)\b/i;
+            const codeRegex = /(0x[a-f0-9]{8,16}|\b[a-z_]+_error\b|\b[a-z_]+_exception\b|error code [0-9]+)/ig;
+            
+            lines.forEach(line => {
+                const isError = errorKeywords.test(line);
+                const isWarning = !isError && warningKeywords.test(line);
+                if (isError || isWarning) {
+                    const codes = [...line.matchAll(codeRegex)];
+                    let findingKey = 'Generic ' + (isError ? 'Error' : 'Warning');
+                    if (codes.length > 0) findingKey = codes[0][0].toLowerCase();
+                    if (!findings[findingKey]) {
+                        findings[findingKey] = { count: 0, type: isError ? 'error' : 'warning' };
+                    }
+                    findings[findingKey].count++;
+                }
+                if (filterType === 'highlight') {
+                    outputHtml += `<div class="${isError ? 'log-line-error' : isWarning ? 'log-line-warning' : ''}">${escapeHtml(line)}</div>`;
+                } else if (filterType === 'only' && (isError || isWarning)) {
+                    outputHtml += `<div class="${isError ? 'log-line-error' : 'log-line-warning'}">${escapeHtml(line)}</div>`;
+                }
+            });
+            logOutput.innerHTML = outputHtml || '<p class="text-gray-500">No se encontraron hallazgos.</p>';
+            renderSummary(findings, programContext);
+        }
+        
+        function renderSummary(findings, programContext) {
+            if (Object.keys(findings).length > 0) {
+                summarySection.classList.remove('hidden');
+                let summaryHtml = '';
+                for (const key in findings) {
+                    const finding = findings[key];
+                    const colorClass = finding.type === 'error' ? 'text-red-400' : 'text-amber-400';
+                    let link, title;
+                    if (key.startsWith('0x8')) {
+                        link = `https://www.hresult.info/search?q=${encodeURIComponent(key)}`;
+                        title = "Buscar HRESULT en hresult.info";
+                    } else {
+                        const searchTerm = `${programContext} ${key}`;
+                        link = `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`;
+                        title = `Buscar "${searchTerm}" en Google`;
+                    }
+                    summaryHtml += `<div class="flex justify-between items-center"><a href="${link}" target="_blank" class="${colorClass} font-mono clickable-link" title="${title}">${escapeHtml(key)}</a><span class="text-gray-400">encontrado <strong>${finding.count}</strong> veces</span></div>`;
+                }
+                summaryOutput.innerHTML = summaryHtml;
+            } else {
+                summarySection.classList.add('hidden');
+            }
+        }
+
+        function copySummary() {
+            const summaryText = Array.from(summaryOutput.children).map(div => {
+                return `${div.children[0].textContent}: ${div.children[1].textContent}`;
+            }).join('\n');
+            navigator.clipboard.writeText(summaryText).then(() => {
+                copySummaryBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copiado';
+                setTimeout(() => { copySummaryBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Copiar'; }, 2000);
+            });
+        }
+
+        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+
+        const startBtn = document.getElementById('start-monitoring');
+        const stopBtn = document.getElementById('stop-monitoring');
+        const statusDiv = document.getElementById('monitoring-status');
+        const liveLogOutput = document.getElementById('live-log-output');
+        let monitoringInterval;
+        let capturedLog = [];
+
+        startBtn.addEventListener('click', () => {
+            startBtn.disabled = true; stopBtn.disabled = false;
+            statusDiv.textContent = 'Estado: Simulando captura...';
+            statusDiv.classList.replace('text-amber-400', 'text-green-400');
+            liveLogOutput.innerHTML = '';
+            capturedLog = [];
+            monitoringInterval = setInterval(generateMockLog, 1500);
+        });
+
+        stopBtn.addEventListener('click', () => {
+            startBtn.disabled = false; stopBtn.disabled = true;
+            clearInterval(monitoringInterval);
+            generateCrashReport();
+        });
+
+        function generateMockLog() {
+            const events = [ 'INFO: Initializing subsystem A...', 'INFO: Loading textures...', 'DEBUG: Shader compilation successful.', 'WARNING: High memory usage detected.', 'INFO: Physics engine started.', 'INFO: User input received.', 'ERROR: NullReferenceException at 0x7FFAC8B0.', 'CRITICAL: Unhandled exception caught.' ];
+            const event = events[Math.floor(Math.random() * events.length)];
+            const logLine = `${new Date().toISOString()} - ${event}`;
+            capturedLog.push(logLine);
+            const p = document.createElement('p');
+            p.textContent = logLine;
+            if (event.includes('ERROR') || event.includes('CRITICAL')) p.className = 'text-red-400';
+            else if (event.includes('WARNING')) p.className = 'text-amber-400';
+            else p.className = 'text-gray-400';
+            liveLogOutput.appendChild(p);
+            liveLogOutput.scrollTop = liveLogOutput.scrollHeight;
+        }
+
+        function generateCrashReport() {
+            const reportContent = "Crash Report (Simulation) - Log Analyzer\n==========================================\n" + capturedLog.join('\n');
+            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const filename = `SimulatedCrashReport_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.log`;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            statusDiv.innerHTML = `Estado: ¡Informe simulado generado! Se ha guardado en tu carpeta de <strong>Descargas</strong>.`;
+            statusDiv.classList.replace('text-green-400', 'text-amber-400');
+        }
+        
+        showTab('welcome');
+    </script>
+</body>
+</html>
