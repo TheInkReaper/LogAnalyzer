@@ -12,7 +12,7 @@ Accede aquí: https://theinkreaper.github.io/LogAnalyzer/
 Opción 2: Offline (Uso sin conexión)
 Descarga la aplicación para usarla en tu PC en cualquier momento, incluso sin conexión a internet.
 
-Descarga la última versión desde la sección de Releases: [Enlace a tu página de Releases (lo obtendrás al final)]
+Descarga la última versión desde la sección de Releases: https://github.com/TheInkReaper/LogAnalyzer/releases/tag/v1.0
 
 Características Principales
 Análisis Fácil: Arrastra y suelta un archivo de log, o simplemente pega el texto para analizarlo al instante.
@@ -26,4 +26,4 @@ Guías Integradas: Aprende a encontrar los archivos de log más importantes de W
 Recursos Útiles: Accede a una lista de herramientas y webs recomendadas para llevar tu diagnóstico al siguiente nivel.
 
 Archivo de Ejemplo
-Para que puedas probar la herramienta, en la sección de "Releases" encontrarás un archivo llamado ejemplo_completo_log.txt. Descárgalo y arrástralo al analizador para ver todas sus funciones en acción.
+Para que puedas probar la herramienta, en la sección de "Releases" encontrarás un archivo llamado ejemplo_gaming_log.txt. Descárgalo y arrástralo al analizador para ver todas sus funciones en acción.
