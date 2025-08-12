@@ -7,7 +7,7 @@ Tienes dos opciones para usar Log Analyzer, elige la que prefieras:
 Opción 1: Online (Recomendado)
 Accede a la herramienta directamente desde tu navegador, sin necesidad de descargar nada.
 
-Accede aquí: [Enlace a tu GitHub Pages (lo obtendrás en el último paso)]
+Accede aquí: https://theinkreaper.github.io/LogAnalyzer/
 
 Opción 2: Offline (Uso sin conexión)
 Descarga la aplicación para usarla en tu PC en cualquier momento, incluso sin conexión a internet.
