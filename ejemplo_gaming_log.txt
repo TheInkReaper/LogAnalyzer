@@ -1,33 +1,86 @@
+================================================================================
+                    LOG DE EJEMPLO - LOG ANALYZER
+          Este archivo demuestra los tipos de errores que detecta la herramienta
+================================================================================
+
 2025-08-12T14:30:01Z - INFO: Game Launcher v1.5.2 initialized.
 2025-08-12T14:30:02Z - INFO: Checking for updates...
 2025-08-12T14:30:03Z - INFO: No new updates found.
 2025-08-12T14:30:05Z - INFO: Starting game: CyberVenture 2088.
-2025-08-12T14:30:06Z - INFO: Loading user profile 'TheInkReaper'.
+2025-08-12T14:30:06Z - INFO: Loading user profile 'Player_01'.
 2025-08-12T14:30:08Z - INFO: Initializing graphics engine: DirectX 12.
 2025-08-12T14:30:09Z - INFO: Detected GPU: NVIDIA GeForce RTX 4080.
+
+--- Ejemplo: Warning de driver desactualizado ---
 2025-08-12T14:30:10Z - WARNING: Graphics driver version 525.33 is outdated. Consider updating for optimal performance.
+
 2025-08-12T14:30:11Z - INFO: Loading main menu assets...
 2025-08-12T14:30:12Z - INFO: Initializing audio engine...
+
+--- Ejemplo: Función deprecated ---
+2025-08-12T14:30:13Z - WARNING: Function 'LoadLegacyShader()' is deprecated and will be removed in v2.0. Use 'LoadShader()' instead.
+
 2025-08-12T14:30:14Z - INFO: Initializing network subsystem...
 2025-08-12T14:30:15Z - INFO: Connecting to matchmaking services...
 2025-08-12T14:30:17Z - INFO: Connection successful.
+
+--- Ejemplo: Error con texto multilingüe ---
 2025-08-12T14:30:18Z - ERROR: Connection to friends service failed. Fallo en el intento de conexión.
 2025-08-12T14:30:18Z - INFO: Proceeding in offline mode.
+
 2025-08-12T14:30:20Z - INFO: User clicked 'Continue Game'. Loading save file 'savegame_04.sav'.
 2025-08-12T14:30:21Z - INFO: Loading world data...
+
+--- Ejemplo: Código HRESULT (0x8...) ---
 2025-08-12T14:30:22Z - ERROR: Failed to write to savegame file. HRESULT: 0x80070005 (Access Denied). Check folder permissions.
-2025-08-12T14:30:24Z - WARNING: Optional cosmetic file 'cosmetics/player_jacket_led.dat' not found. This is not critical.
-2025-08-12T14:30:25Z - ERROR: Could not load texture file 'data/textures/vehicles/quadra_v-tech_decals.dds'. File not found.
+
+--- Ejemplo: Archivo no encontrado ---
+2025-08-12T14:30:24Z - WARNING: Optional cosmetic file 'cosmetics/player_jacket_led.dat' not found. Skipping.
+2025-08-12T14:30:25Z - ERROR: Could not load texture file 'data/textures/vehicles/quadra_v-tech_decals.dds'. File is missing or corrupt.
 2025-08-12T14:30:25Z - INFO: Substituting with placeholder texture.
+
+--- Ejemplo: Código de error numérico ---
+2025-08-12T14:30:26Z - ERROR: Mod installation failed with error code 1603.
+
+--- Ejemplo: Error COM/DirectX con prefijo E_ ---
+2025-08-12T14:30:27Z - ERROR: Failed to allocate GPU resource: E_OUTOFMEMORY. Try lowering texture quality.
+
 2025-08-12T14:30:28Z - INFO: Initializing physics engine...
-2025-08-12T14:30:30Z - WARNING: High memory usage detected: 14.8 GB / 16.0 GB. Game may experience slow downs.
+
+--- Ejemplo: Warning de recursos del sistema ---
+2025-08-12T14:30:30Z - WARNING: High memory usage detected: 14.8 GB / 16.0 GB. Game may experience slowdowns.
+2025-08-12T14:30:31Z - WARNING: Timeout while loading 'world_chunk_47.dat'. Retrying...
+
 2025-08-12T14:30:32Z - INFO: World loaded. Player spawned at coordinates (1024, -512, 78).
-2025-08-12T14:30:45Z - INFO: Player entered combat.
-2025-08-12T14:30:55Z - ERROR: AI script 'npc_arasaka_netrunner.lua' failed to execute.
-2025-08-12T14:31:02Z - WARNING: Network latency spike detected. Timeout possible.
+2025-08-12T14:30:45Z - INFO: Player entered combat zone.
+
+--- Ejemplo: Error de script/plugin ---
+2025-08-12T14:30:55Z - ERROR: AI script 'npc_arasaka_netrunner.lua' failed to execute. NullReferenceException at line 847.
+
+--- Ejemplo: Stack trace (común en crashes) ---
+2025-08-12T14:30:55Z - ERROR: Stack trace:
+    at GameEngine.AI.BehaviorTree.Execute(Node current) in BehaviorTree.cpp:412
+    at GameEngine.AI.NPCController.Update(float deltaTime) in NPCController.cpp:156
+    at GameEngine.Core.WorldSimulation.Tick() in WorldSimulation.cpp:89
+
+--- Ejemplo: Latencia de red ---
+2025-08-12T14:31:02Z - WARNING: Network latency spike detected (458ms). Connection timeout possible.
+
+--- Ejemplo: Error estilo Android logcat ---
+2025-08-12T14:31:04Z - E/CrashHandler: Fatal signal detected in main thread.
+
+--- Ejemplo: Crash con código NTSTATUS (0xc...) y ACCESS_VIOLATION ---
 2025-08-12T14:31:05Z - CRITICAL: Unhandled exception caught!
-2025-08-12T14:31:05Z - CRITICAL: Exception code: 0xc0000005 (ACCESS_VIOLATION) at memory address 0x00007FF6A4B8D1C0.
+2025-08-12T14:31:05Z - CRITICAL: Exception code: 0xc0000005 (STATUS_ACCESS_VIOLATION) at address 0x00007FF6A4B8D1C0.
 2025-08-12T14:31:05Z - CRITICAL: The thread tried to read from or write to a virtual address for which it does not have the appropriate access.
+
+--- Ejemplo: Información post-crash ---
 2025-08-12T14:31:06Z - INFO: Generating crash dump...
-2025-08-12T14:31:07Z - INFO: Crash dump saved to C:\Users\TheInkReaper\AppData\Local\CyberVenture\crash_dumps\
+2025-08-12T14:31:07Z - INFO: Crash dump saved to: C:\Users\Player\AppData\Local\CyberVenture\CrashDumps\crash_2025-08-12_143105.dmp
+2025-08-12T14:31:08Z - INFO: Please report this crash at: https://github.com/example/cyberventure/issues
 2025-08-12T14:31:08Z - INFO: Shutting down application.
+
+================================================================================
+                         FIN DEL LOG DE EJEMPLO
+   Prueba a buscar "0x80070005" o "ACCESS_VIOLATION" usando la barra de búsqueda
+================================================================================
