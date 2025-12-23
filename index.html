@@ -5,378 +5,1599 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Analyzer</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%233b82f6' d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM2 2h10v2H2V2zm0 4h10v2H2V6zm0 4h6v2H2v-2z'/></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg-color: #111827; --card-color: #1f2937; --border-color: #374151; --text-color: #d1d5db; --text-color-light: #9ca3af; --accent-color: #3b82f6; --error-color: #f87171; --warning-color: #fbbf24; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); font-size: 14px; }
-        .nav-button.active { background-color: var(--border-color); color: #ffffff; border-left-width: 4px; border-color: var(--accent-color); }
-        .info-card { background-color: var(--card-color); border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border-color); }
-        .info-card h3 { color: #60a5fa; font-weight: 600; margin-bottom: 0.75rem; }
-        .info-card code { background-color: var(--border-color); padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #e5e7eb; }
-        #log-output, #live-log-output { white-space: pre-wrap; word-wrap: break-word; font-family: 'Menlo', 'Courier New', Courier, monospace; font-size: 13px; background-color: var(--card-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; max-height: 45vh; overflow-y: auto; }
-        .log-line-error { background-color: rgba(239, 68, 68, 0.1); color: var(--error-color); }
-        .log-line-warning { background-color: rgba(251, 191, 36, 0.1); color: var(--warning-color); }
-        #drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; transition: all 0.3s ease; }
-        #drop-zone.dragover { border-color: var(--accent-color); background-color: var(--border-color); }
-        .clickable-link { color: var(--accent-color); text-decoration: underline; cursor: pointer; }
-    </style>
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-</head>
-<body class="flex h-screen">
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-elevated: #243049;
+            --border-color: #2d3a52;
+            --border-hover: #3d4a62;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --error-color: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.1);
+            --warning-color: #fbbf24;
+            --warning-bg: rgba(251, 191, 36, 0.1);
+            --success-color: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.1);
+        }
 
-    <nav class="w-64 bg-gray-800 p-4 space-y-2 flex flex-col flex-shrink-0">
-        <h1 class="text-xl font-bold text-white mb-6 flex items-center">
-            <svg class="w-8 h-8 mr-3 text-blue-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Navegación lateral */
+        nav {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            color: var(--accent-primary);
+        }
+
+        .logo h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav-button {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-button:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .nav-button.active {
+            background: var(--bg-card);
+            color: white;
+            border-left: 3px solid var(--accent-primary);
+            padding-left: calc(1rem - 3px);
+        }
+
+        .nav-button i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .nav-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Contenido principal */
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0d1424 100%);
+        }
+
+        .tab-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tarjetas */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+        }
+
+        .card code {
+            background: var(--bg-elevated);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: var(--accent-secondary);
+        }
+
+        /* Grid de opciones en bienvenida */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .option-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .option-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .option-card strong {
+            display: block;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-card span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Zona de drop */
+        #drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+
+        #drop-zone.dragover {
+            border-color: var(--accent-primary);
+            background: var(--accent-glow);
+        }
+
+        #drop-zone p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        #drop-zone .file-info {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: #0a0f1a;
+        }
+
+        .btn-success:hover {
+            background: #2dd4bf;
+        }
+
+        /* Textarea */
+        textarea {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Opciones de filtro */
+        .filter-options {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-options label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .filter-options input[type="radio"] {
+            accent-color: var(--accent-primary);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Barra de búsqueda */
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Output del log */
+        #log-output {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 50vh;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .log-line {
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .log-line-error {
+            background: var(--error-bg);
+            color: var(--error-color);
+        }
+
+        .log-line-warning {
+            background: var(--warning-bg);
+            color: var(--warning-color);
+        }
+
+        .log-line-number {
+            display: inline-block;
+            width: 50px;
+            color: var(--text-muted);
+            user-select: none;
+            text-align: right;
+            padding-right: 12px;
+            margin-right: 8px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .highlight-match {
+            background: rgba(251, 191, 36, 0.3);
+            border-radius: 2px;
+        }
+
+        /* Estadísticas */
+        .stats-bar {
+            display: flex;
+            gap: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-item.errors { color: var(--error-color); }
+        .stat-item.warnings { color: var(--warning-color); }
+        .stat-item.total { color: var(--text-secondary); }
+
+        /* Resumen */
+        #summary-section {
+            margin-top: 1.5rem;
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .summary-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        #summary-output {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .finding-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .finding-item:last-child {
+            border-bottom: none;
+        }
+
+        .finding-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .finding-code:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .finding-code.error { color: var(--error-color); }
+        .finding-code.warning { color: var(--warning-color); }
+
+        .finding-count {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Listas */
+        ol, ul {
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Links */
+        a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--accent-primary);
+            text-decoration: underline;
+        }
+
+        /* Alerta/mensaje de estado */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-info {
+            background: var(--accent-glow);
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-secondary);
+        }
+
+        .alert-warning {
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .alert-error {
+            background: var(--error-bg);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .alert i {
+            font-size: 1.1rem;
+            margin-top: 2px;
+        }
+
+        /* Mensaje vacío/placeholder */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Loader */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Progreso */
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-elevated);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        /* Recursos grid */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .resource-link {
+            display: block;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .resource-link:last-child {
+            border-bottom: none;
+        }
+
+        .resource-link strong {
+            color: var(--text-primary);
+        }
+
+        /* Secciones colapsables en la guía */
+        .guide-section {
+            scroll-margin-top: 2rem;
+        }
+
+        /* Tooltip para contexto */
+        #context-info {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            nav {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .logo {
+                display: none;
+            }
+
+            .nav-button {
+                white-space: nowrap;
+                padding: 0.5rem 1rem;
+            }
+
+            .nav-button span {
+                display: none;
+            }
+
+            .nav-footer {
+                display: none;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav role="navigation" aria-label="Navegación principal">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z" fill="currentColor"/>
                 <path d="M2 2H12V4H2V2Z" fill="currentColor"/>
                 <path d="M2 6H12V8H2V6Z" fill="currentColor"/>
                 <path d="M2 10H8V12H2V10Z" fill="currentColor"/>
             </svg>
-            <span>Log Analyzer</span>
-        </h1>
-        <button onclick="showTab('welcome')" class="nav-button active w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-home w-6 mr-2"></i>Primeros Pasos</button>
-        <button onclick="showTab('analyzer')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-file-alt w-6 mr-2"></i>Analizar Logs</button>
-        <button onclick="showTab('info')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-info-circle w-6 mr-2"></i>Guía de Logs</button>
-        <button onclick="showTab('crash-log')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-biohazard w-6 mr-2"></i>Diagnosticar un Crash</button>
-        <button onclick="showTab('resources')" class="nav-button w-full text-left p-3 rounded-lg flex items-center"><i class="fas fa-book w-6 mr-2"></i>Recursos Útiles</button>
-        <div class="flex-grow"></div>
-        <div class="text-xs text-gray-500 text-center"><p>por TheInkReaper</p></div>
+            <h1>Log Analyzer</h1>
+        </div>
+        
+        <button onclick="showTab('welcome')" class="nav-button active" aria-current="page">
+            <i class="fas fa-home" aria-hidden="true"></i>
+            <span>Inicio</span>
+        </button>
+        <button onclick="showTab('analyzer')" class="nav-button">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <span>Analizar</span>
+        </button>
+        <button onclick="showTab('info')" class="nav-button">
+            <i class="fas fa-book-open" aria-hidden="true"></i>
+            <span>Guía</span>
+        </button>
+        <button onclick="showTab('resources')" class="nav-button">
+            <i class="fas fa-tools" aria-hidden="true"></i>
+            <span>Recursos</span>
+        </button>
+        
+        <div class="nav-footer">
+            <p>por TheInkReaper</p>
+            <p style="margin-top: 4px; opacity: 0.7;">v2.0</p>
+        </div>
     </nav>
 
-    <main class="flex-1 p-6 overflow-y-auto bg-gray-900">
-        
+    <main role="main">
+        <!-- Tab: Bienvenida -->
         <div id="welcome" class="tab-content">
-            <h2 class="text-2xl font-bold text-white mb-4">Bienvenido a Log Analyzer</h2>
-            <p class="text-gray-400 mb-6">Herramienta de diagnóstico para ayudarte a solucionar problemas en tu PC.</p>
-            <div class="info-card">
-                <h3 class="text-lg">¿Qué problema tienes?</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <button onclick="showTab('info', 'bsod-section')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>Pantallazo Azul (BSOD)</strong><br><span class="text-sm text-gray-400">El PC se reinicia con una pantalla azul.</span></button>
-                    <button onclick="showTab('crash-log')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>Un juego o programa se cierra</strong><br><span class="text-sm text-gray-400">La aplicación falla inesperadamente.</span></button>
-                    <button onclick="showTab('info', 'system-section')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>PC lento o fallos de actualización</strong><br><span class="text-sm text-gray-400">Problemas de rendimiento o con Windows Update.</span></button>
-                    <button onclick="showTab('analyzer')" class="text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition"><strong>Ya tengo un archivo de log</strong><br><span class="text-sm text-gray-400">Ir directamente al analizador.</span></button>
+            <h2>Bienvenido a Log Analyzer</h2>
+            <p class="subtitle">Herramienta de diagnóstico para ayudarte a entender y solucionar errores en tu PC.</p>
+            
+            <div class="card">
+                <h3><i class="fas fa-compass" aria-hidden="true"></i> ¿Qué problema tienes?</h3>
+                <div class="options-grid">
+                    <button onclick="showTab('info', 'bsod-section')" class="option-card">
+                        <strong><i class="fas fa-desktop" aria-hidden="true"></i> Pantallazo Azul (BSOD)</strong>
+                        <span>El PC se reinicia mostrando una pantalla azul con un código de error.</span>
+                    </button>
+                    <button onclick="showTab('info', 'app-section')" class="option-card">
+                        <strong><i class="fas fa-window-close" aria-hidden="true"></i> Un programa se cierra</strong>
+                        <span>Una aplicación o juego falla inesperadamente.</span>
+                    </button>
+                    <button onclick="showTab('info', 'system-section')" class="option-card">
+                        <strong><i class="fas fa-cogs" aria-hidden="true"></i> Problemas de Windows</strong>
+                        <span>Actualizaciones fallidas, lentitud, errores del sistema.</span>
+                    </button>
+                    <button onclick="showTab('analyzer')" class="option-card">
+                        <strong><i class="fas fa-file-code" aria-hidden="true"></i> Ya tengo un log</strong>
+                        <span>Ir directamente al analizador de archivos.</span>
+                    </button>
                 </div>
+            </div>
+
+            <div class="card" style="margin-top: 1rem;">
+                <h3><i class="fas fa-lightbulb" aria-hidden="true"></i> ¿Cómo funciona?</h3>
+                <ol>
+                    <li>Encuentra el archivo de log apropiado (la <strong>Guía</strong> te explica dónde buscar).</li>
+                    <li>Arrastra el archivo al <strong>Analizador</strong> o pega su contenido.</li>
+                    <li>La herramienta resaltará errores y te dará enlaces para buscar soluciones.</li>
+                </ol>
             </div>
         </div>
 
-        <div id="info" class="tab-content hidden">
-            <h2 class="text-2xl font-bold text-white mb-6">Guía para Encontrar Archivos de Log</h2>
-            <div class="space-y-6 text-gray-300">
-                 <div id="app-section" class="info-card">
-                    <h3 class="text-lg">Visor de Eventos de Windows</h3>
-                    <p class="mb-4">Es la fuente principal para errores de aplicaciones. Para usar sus logs aquí, necesitas exportarlos:</p>
-                    <ol class="list-decimal list-inside space-y-2 mb-4">
-                        <li>Abre el Visor de Eventos (<code>Win + R</code> y escribe <code>eventvwr.msc</code>).</li>
-                        <li>En <strong>Registros de Windows > Aplicación</strong>, ve a Acciones > <strong>"Filtrar registro actual..."</strong>. Marca <strong>Crítico</strong>, <strong>Error</strong> y <strong>Advertencia</strong>.</li>
-                        <li>Clic derecho en "Aplicación" > <strong>"Guardar eventos filtrados como..."</strong> y elige el tipo <strong>"Texto (delimitado por tabulaciones) (*.txt)"</strong>.</li>
-                    </ol>
-                    <p class="mb-2"><strong>Tipos de Errores:</strong> A menudo verás errores que empiezan por <code>0x8...</code> (HRESULT) o <code>0xc...</code> (NTSTATUS). Nuestra herramienta los detecta y te ofrece el enlace de búsqueda más adecuado para cada uno.</p>
-                </div>
-                <div class="info-card">
-                    <h3 class="text-lg">Logs de Juegos (Steam y otros)</h3>
-                    <p class="mb-2">Si el problema es con un juego específico, busca sus propios archivos de log. Suelen estar en la carpeta de instalación del juego o en `Mis Documentos`.</p>
-                    <p>Para encontrar la carpeta de un juego de Steam: en tu Biblioteca, haz clic derecho sobre el juego > Propiedades > Archivos instalados > Explorar. Busca carpetas como `Logs`, `Crash` o `Saved`.</p>
-                </div>
-                 <div id="bsod-section" class="info-card">
-                    <h3 class="text-lg">Pantallazos Azules (BSOD)</h3>
-                    <p class="mb-2">Un pantallazo azul crea un archivo de diagnóstico llamado <strong>Minidump</strong> (<code>.dmp</code>), que es la clave para saber qué falló.</p>
-                    <p class="mb-2"><strong>Ubicación:</strong> <code>C:\Windows\Minidump</code>.</p>
-                    <p><strong>Importante:</strong> Los archivos <code>.dmp</code> no son de texto y no se pueden usar en este analizador. Necesitas una herramienta externa como las recomendadas en "Recursos Útiles".</p>
-                </div>
-                <div id="system-section" class="info-card">
-                    <h3 class="text-lg">Logs Críticos del Sistema</h3>
-                    <p class="mb-4">Para problemas serios, Windows guarda logs de texto que puedes arrastrar a este analizador.</p>
-                    <ul class="list-disc list-inside space-y-3">
-                        <li><strong>Instalación/Actualización (Panther):</strong><br>
-                            <span class="text-sm text-gray-400">Úsalo si Windows falla al instalarse o durante una gran actualización.</span><br>
-                            Ruta: <code>C:\Windows\Panther\</code> (Archivo: <code>setuperr.log</code>).
-                        </li>
-                        <li><strong>Componentes y Drivers (CBS):</strong><br>
-                            <span class="text-sm text-gray-400">Úsalo si falla Windows Update, `sfc /scannow`, o sospechas de un archivo de sistema corrupto.</span><br>
-                            Ruta: <code>C:\Windows\Logs\CBS\</code> (Archivo: <code>CBS.log</code>).
-                        </li>
-                        <li><strong>Reparación de imagen (DISM):</strong><br>
-                            <span class="text-sm text-gray-400">Úsalo para ver el informe detallado de una operación de DISM, sobre todo si falla.</span><br>
-                            Ruta: <code>C:\Windows\Logs\DISM\</code> (Archivo: <code>dism.log</code>).
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
+        <!-- Tab: Analizador -->
         <div id="analyzer" class="tab-content hidden">
-            <h2 class="text-2xl font-bold text-white mb-4">Analizador de Logs</h2>
-            <div class="bg-gray-800 p-4 rounded-lg">
-                <div id="drop-zone" class="mb-4">
-                    <p class="text-gray-400">Arrastra y suelta un archivo de log aquí</p>
-                    <p class="text-sm text-gray-500 my-2">o</p>
-                    <input type="file" id="log-file" class="hidden">
-                    <label for="log-file" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg cursor-pointer">Selecciona un archivo</label>
+            <h2>Analizador de Logs</h2>
+            <p class="subtitle">Arrastra un archivo o pega el contenido del log para analizarlo.</p>
+            
+            <div class="card">
+                <div id="drop-zone" role="button" tabindex="0" aria-label="Zona para soltar archivos">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;" aria-hidden="true"></i>
+                    <p>Arrastra y suelta un archivo de log aquí</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.5rem 0;">o</p>
+                    <input type="file" id="log-file" accept=".log,.txt,.csv,.xml" aria-label="Seleccionar archivo" style="display: none !important;">
+                    <label for="log-file" class="btn btn-primary" style="cursor: pointer;">
+                        <i class="fas fa-folder-open" aria-hidden="true"></i> Seleccionar archivo
+                    </label>
+                    <p class="file-info">Formatos: .log, .txt, .csv, .xml — Máximo recomendado: 10 MB</p>
                 </div>
-                <textarea id="paste-zone" class="w-full h-24 bg-gray-900 border border-gray-700 rounded-lg p-2 mb-4 text-sm" placeholder="... o pega el texto del log aquí"></textarea>
                 
-                <div class="flex items-center space-x-6 mb-4">
-                    <p class="text-sm font-medium text-gray-300">Opciones:</p>
-                    <div class="flex items-center"><input id="filter-highlight" type="radio" value="highlight" name="filter-option" class="w-4 h-4" checked><label for="filter-highlight" class="ml-2">Resaltar Errores/Warnings</label></div>
-                    <div class="flex items-center"><input id="filter-only" type="radio" value="only" name="filter-option" class="w-4 h-4"><label for="filter-only" class="ml-2">Mostrar solo Errores/Warnings</label></div>
+                <div id="loading-indicator" style="display: none; text-align: center; padding: 1rem;">
+                    <div class="loader"></div>
+                    <p style="margin-top: 0.5rem; color: var(--text-muted);">Procesando archivo...</p>
+                    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%;"></div></div>
                 </div>
 
-                <div id="log-output" class="min-h-[200px]"><p class="text-gray-500">El contenido del log aparecerá aquí...</p></div>
-                
-                <div id="summary-section" class="mt-4 hidden">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-lg font-semibold text-white">Resumen de Hallazgos</h3>
-                        <button id="copy-summary-btn" class="text-sm bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded-lg"><i class="fas fa-copy mr-2"></i>Copiar</button>
+                <div style="margin-top: 1rem;">
+                    <textarea id="paste-zone" rows="4" placeholder="... o pega el contenido del log aquí" aria-label="Pegar contenido del log"></textarea>
+                </div>
+
+                <div class="filter-options">
+                    <span style="color: var(--text-secondary); font-weight: 500;">Visualización:</span>
+                    <label>
+                        <input type="radio" name="filter-option" value="highlight" checked>
+                        Resaltar errores
+                    </label>
+                    <label>
+                        <input type="radio" name="filter-option" value="only">
+                        Solo errores y warnings
+                    </label>
+                    <label>
+                        <input type="checkbox" id="show-line-numbers" checked style="accent-color: var(--accent-primary);">
+                        Números de línea
+                    </label>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Buscar en el log... (Ctrl+F)" aria-label="Buscar en el log">
+                    <button class="btn btn-secondary" onclick="searchInLog()" aria-label="Buscar">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div id="stats-bar" class="stats-bar hidden">
+                    <div class="stat-item total">
+                        <i class="fas fa-file-alt" aria-hidden="true"></i>
+                        <span id="stat-total">0 líneas</span>
                     </div>
-                    <div id="context-info" class="text-xs text-gray-400 mb-2"></div>
-                    <div id="summary-output" class="p-4 bg-gray-900 rounded-lg space-y-2 text-sm"></div>
+                    <div class="stat-item errors">
+                        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                        <span id="stat-errors">0 errores</span>
+                    </div>
+                    <div class="stat-item warnings">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                        <span id="stat-warnings">0 warnings</span>
+                    </div>
+                    <div class="stat-item" style="color: var(--text-muted);">
+                        <i class="fas fa-weight-hanging" aria-hidden="true"></i>
+                        <span id="stat-size">0 KB</span>
+                    </div>
+                </div>
+
+                <div id="log-output" aria-live="polite">
+                    <div class="empty-state">
+                        <i class="fas fa-file-import" aria-hidden="true"></i>
+                        <p>El contenido del log aparecerá aquí</p>
+                    </div>
+                </div>
+
+                <div id="summary-section" class="hidden">
+                    <div class="summary-header">
+                        <h3><i class="fas fa-clipboard-list" aria-hidden="true"></i> Resumen de Hallazgos</h3>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="copy-summary-btn" class="btn btn-secondary" onclick="copySummary()">
+                                <i class="fas fa-copy" aria-hidden="true"></i> Copiar
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportAnalysis()">
+                                <i class="fas fa-download" aria-hidden="true"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="context-info"></div>
+                    <div id="summary-output"></div>
                 </div>
             </div>
         </div>
 
-        <div id="crash-log" class="tab-content hidden">
-             <h2 class="text-2xl font-bold text-white mb-4">Diagnosticar un Crash</h2>
-             <div class="space-y-6">
-                <div class="info-card">
-                    <h3 class="text-lg">Opción 1: Simulación de Captura</h3>
-                    <p class="mb-4 text-sm">Esta herramienta simula la captura de un log en tiempo real. Es útil para entender cómo se ve un log, pero **no captura el error real de tu sistema**.</p>
-                    <div class="flex space-x-4 mb-4">
-                        <button id="start-monitoring" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"><i class="fas fa-play mr-2"></i>Iniciar</button>
-                        <button id="stop-monitoring" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center" disabled><i class="fas fa-stop mr-2"></i>Detener</button>
-                    </div>
-                    <div id="live-log-output" class="min-h-[150px]"></div>
-                    <div id="monitoring-status" class="mt-4 p-3 bg-gray-900 rounded-lg font-semibold text-amber-400">Estado: Inactivo</div>
-                </div>
-                <div class="info-card">
-                    <h3 class="text-lg">Opción 2: Obtener el Informe de Crash Real (Recomendado)</h3>
-                    <p class="mb-4">Cuando un programa falla, Windows lo registra. Esta es la forma de encontrar la información más valiosa.</p>
-                    <ol class="list-decimal list-inside space-y-3">
-                        <li><strong>Justo después del crash</strong>, abre el Visor de Eventos (<code>Win + R</code> y escribe <code>eventvwr.msc</code>).</li>
-                        <li>Ve a <strong>Registros de Windows > Aplicación</strong> y busca el evento más reciente marcado como <strong>"Error"</strong>.</li>
-                        <li>En el panel de abajo, busca estas dos líneas:
-                            <ul class="list-disc list-inside ml-6 mt-2 bg-gray-900 p-3 rounded-md">
-                                <li><strong>Nombre de la aplicación con errores:</strong> El programa que se cerró (ej. <code>Cyberpunk2077.exe</code>).</li>
-                                <li><strong>Nombre del módulo con errores:</strong> El archivo que causó el fallo (ej. <code>nvwgf2umx.dll</code>, que apunta a un driver de Nvidia).</li>
-                            </ul>
-                        </li>
-                        <li>Usa el <strong>nombre del módulo</strong> y el <strong>código de excepción</strong> para buscar una solución en internet.</li>
-                    </ol>
-                </div>
-             </div>
-        </div>
+        <!-- Tab: Guía -->
+        <div id="info" class="tab-content hidden">
+            <h2>Guía para Encontrar Logs</h2>
+            <p class="subtitle">Aprende dónde encontrar los archivos de diagnóstico según tu problema.</p>
 
-        <div id="resources" class="tab-content hidden">
-            <h2 class="text-2xl font-bold text-white mb-6">Recursos y Herramientas Útiles</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="info-card">
-                    <h3 class="text-lg">Herramientas de Diagnóstico (Gratuitas)</h3>
-                    <p class="mb-3">Aplicaciones seguras y portátiles para un análisis más profundo.</p>
-                    <ul class="list-disc list-inside space-y-2">
-                        <li><strong>BlueScreenView:</strong> Lee los archivos Minidump (<code>.dmp</code>) de pantallazos azules y te dice qué driver causó el fallo.</li>
-                        <li><strong>Autoruns:</strong> Muestra todo lo que arranca con tu PC y permite desactivar elementos para solucionar conflictos.</li>
+            <div id="app-section" class="card guide-section">
+                <h3><i class="fas fa-window-maximize" aria-hidden="true"></i> Visor de Eventos de Windows</h3>
+                <p>Es la fuente principal para errores de aplicaciones. Para usar sus logs aquí, necesitas exportarlos:</p>
+                <ol style="margin-top: 0.75rem;">
+                    <li>Abre el Visor de Eventos: presiona <code>Win + R</code>, escribe <code>eventvwr.msc</code> y pulsa Enter.</li>
+                    <li>En el panel izquierdo, ve a <strong>Registros de Windows → Aplicación</strong>.</li>
+                    <li>Clic derecho en "Aplicación" → <strong>Filtrar registro actual</strong>. Marca <strong>Crítico</strong>, <strong>Error</strong> y <strong>Advertencia</strong>.</li>
+                    <li>Clic derecho de nuevo → <strong>Guardar eventos filtrados como...</strong></li>
+                    <li>En "Guardar como tipo", elige <strong>Texto (delimitado por tabulaciones) (*.txt)</strong>.</li>
+                </ol>
+                <div class="alert alert-info" style="margin-top: 1rem;">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <div>
+                        <strong>Tipos de códigos de error:</strong> Los códigos que empiezan por <code>0x8...</code> son errores HRESULT (típicos de Windows/COM). Los que empiezan por <code>0xc...</code> son NTSTATUS (kernel/drivers). Nuestra herramienta detecta ambos y genera enlaces de búsqueda apropiados.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-gamepad" aria-hidden="true"></i> Logs de Juegos</h3>
+                <p>Los juegos suelen guardar sus propios logs. Ubicaciones comunes:</p>
+                <ul style="margin-top: 0.75rem;">
+                    <li><strong>Steam:</strong> Clic derecho en el juego → Propiedades → Archivos instalados → Explorar. Busca carpetas como <code>Logs</code>, <code>Crash</code> o <code>Saved</code>.</li>
+                    <li><strong>Documentos:</strong> Muchos juegos guardan logs en <code>Mis Documentos\Nombre del Juego\</code>.</li>
+                    <li><strong>AppData:</strong> Revisa <code>%LOCALAPPDATA%\Nombre del Juego\</code> o <code>%APPDATA%\Nombre del Juego\</code>.</li>
+                </ul>
+                <p style="margin-top: 0.75rem;">Busca archivos con extensiones como <code>.log</code>, <code>.txt</code>, <code>crash.dmp</code>, o carpetas llamadas <code>CrashDumps</code>.</p>
+            </div>
+
+            <div id="bsod-section" class="card guide-section">
+                <h3><i class="fas fa-skull-crossbones" aria-hidden="true"></i> Pantallazos Azules (BSOD)</h3>
+                <p>Un BSOD crea un archivo de volcado (dump) que contiene información sobre el fallo.</p>
+                
+                <div class="alert alert-warning" style="margin-top: 1rem;">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    <div>
+                        <strong>Importante:</strong> Los archivos <code>.dmp</code> son binarios y NO se pueden analizar con esta herramienta. Necesitas software especializado como <strong>BlueScreenView</strong> (ver Recursos).
+                    </div>
+                </div>
+                
+                <p style="margin-top: 1rem;"><strong>Ubicación de los Minidumps:</strong></p>
+                <ul>
+                    <li><code>C:\Windows\Minidump\</code> — Volcados pequeños (más comunes).</li>
+                    <li><code>C:\Windows\MEMORY.DMP</code> — Volcado completo (si está configurado).</li>
+                </ul>
+                
+                <p style="margin-top: 1rem;"><strong>Qué hacer:</strong></p>
+                <ol>
+                    <li>Descarga <a href="https://www.nirsoft.net/utils/blue_screen_view.html" target="_blank">BlueScreenView</a> (gratuito, portable).</li>
+                    <li>Ábrelo y automáticamente listará todos los BSODs.</li>
+                    <li>Mira la columna "Caused By Driver" para identificar el culpable.</li>
+                </ol>
+            </div>
+
+            <div id="system-section" class="card guide-section">
+                <h3><i class="fas fa-server" aria-hidden="true"></i> Logs del Sistema Windows</h3>
+                <p>Para problemas graves de Windows, estos logs de texto SÍ se pueden analizar aquí:</p>
+                
+                <div style="margin-top: 1rem;">
+                    <p><strong>1. Errores de Instalación/Actualización:</strong></p>
+                    <ul>
+                        <li>Ruta: <code>C:\Windows\Panther\setuperr.log</code></li>
+                        <li>Uso: Cuando Windows falla al instalarse o durante actualizaciones mayores.</li>
                     </ul>
                 </div>
-                <div class="info-card">
-                    <h3 class="text-lg">Webs de Consulta</h3>
-                     <p class="mb-3">Usa estas webs para buscar soluciones a problemas específicos.</p>
-                    <div class="space-y-2">
-                        <a href="https://www.hresult.info/" target="_blank" class="block hover:text-white"><strong>hresult.info:</strong> Buscador para errores que empiezan por `0x8...` (HRESULT).</a>
-                        <a href="https://www.pcgamingwiki.com/wiki/Home" target="_blank" class="block hover:text-white"><strong>PCGamingWiki:</strong> La enciclopedia para arreglar juegos de PC.</a>
-                        <a href="https://es.ifixit.com/" target="_blank" class="block hover:text-white"><strong>iFixit:</strong> Guías de reparación para hardware y software.</a>
-                        <a href="https://answers.microsoft.com/" target="_blank" class="block hover:text-white"><strong>Microsoft Community:</strong> Foro oficial para buscar errores de Windows.</a>
+                
+                <div style="margin-top: 1rem;">
+                    <p><strong>2. Componentes y Windows Update (CBS):</strong></p>
+                    <ul>
+                        <li>Ruta: <code>C:\Windows\Logs\CBS\CBS.log</code></li>
+                        <li>Uso: Cuando falla Windows Update o <code>sfc /scannow</code>.</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <p><strong>3. Reparación de Imagen (DISM):</strong></p>
+                    <ul>
+                        <li>Ruta: <code>C:\Windows\Logs\DISM\dism.log</code></li>
+                        <li>Uso: Para ver detalles de operaciones DISM.</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info" style="margin-top: 1rem;">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <div>
+                        <strong>Consejo:</strong> El archivo CBS.log puede ser muy grande (50+ MB). Si tu navegador se vuelve lento, filtra primero el archivo usando PowerShell:<br>
+                        <code style="display: block; margin-top: 0.5rem;">Select-String -Path "C:\Windows\Logs\CBS\CBS.log" -Pattern "error|fail" | Out-File filtered.txt</code>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Tab: Recursos -->
+        <div id="resources" class="tab-content hidden">
+            <h2>Recursos y Herramientas</h2>
+            <p class="subtitle">Herramientas gratuitas y webs útiles para diagnóstico avanzado.</p>
+
+            <div class="resources-grid">
+                <div class="card">
+                    <h3><i class="fas fa-wrench" aria-hidden="true"></i> Herramientas de Diagnóstico</h3>
+                    <p>Aplicaciones gratuitas y portables para análisis profundo.</p>
+                    
+                    <a href="https://www.nirsoft.net/utils/blue_screen_view.html" target="_blank" class="resource-link">
+                        <strong>BlueScreenView</strong><br>
+                        <span style="color: var(--text-muted);">Lee archivos Minidump (.dmp) y muestra qué driver causó el BSOD.</span>
+                    </a>
+                    
+                    <a href="https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns" target="_blank" class="resource-link">
+                        <strong>Autoruns (Microsoft)</strong><br>
+                        <span style="color: var(--text-muted);">Muestra todo lo que arranca con Windows. Útil para detectar conflictos.</span>
+                    </a>
+                    
+                    <a href="https://learn.microsoft.com/en-us/sysinternals/downloads/process-monitor" target="_blank" class="resource-link">
+                        <strong>Process Monitor (Microsoft)</strong><br>
+                        <span style="color: var(--text-muted);">Monitoreo en tiempo real de sistema de archivos, registro y procesos.</span>
+                    </a>
+                    
+                    <a href="https://www.hwinfo.com/" target="_blank" class="resource-link">
+                        <strong>HWiNFO</strong><br>
+                        <span style="color: var(--text-muted);">Diagnóstico de hardware: temperaturas, voltajes, sensores.</span>
+                    </a>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-globe" aria-hidden="true"></i> Webs de Consulta</h3>
+                    <p>Buscadores y bases de datos para encontrar soluciones.</p>
+                    
+                    <a href="https://www.hresult.info/" target="_blank" class="resource-link">
+                        <strong>hresult.info</strong><br>
+                        <span style="color: var(--text-muted);">Buscador para códigos HRESULT (0x8...).</span>
+                    </a>
+                    
+                    <a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-code-reference2" target="_blank" class="resource-link">
+                        <strong>Bug Check Reference (Microsoft)</strong><br>
+                        <span style="color: var(--text-muted);">Referencia oficial de códigos de BSOD.</span>
+                    </a>
+                    
+                    <a href="https://www.pcgamingwiki.com/" target="_blank" class="resource-link">
+                        <strong>PCGamingWiki</strong><br>
+                        <span style="color: var(--text-muted);">Enciclopedia para arreglar problemas de juegos de PC.</span>
+                    </a>
+                    
+                    <a href="https://answers.microsoft.com/" target="_blank" class="resource-link">
+                        <strong>Microsoft Community</strong><br>
+                        <span style="color: var(--text-muted);">Foro oficial para buscar errores de Windows.</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1rem;">
+                <h3><i class="fas fa-terminal" aria-hidden="true"></i> Comandos Útiles</h3>
+                <p>Ejecuta estos comandos en una terminal con permisos de administrador:</p>
+                
+                <div style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                    <p style="margin-bottom: 0.75rem;"><strong>Verificar archivos del sistema:</strong></p>
+                    <code style="display: block; background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">sfc /scannow</code>
+                    
+                    <p style="margin: 1rem 0 0.75rem 0;"><strong>Reparar imagen de Windows:</strong></p>
+                    <code style="display: block; background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">DISM /Online /Cleanup-Image /RestoreHealth</code>
+                    
+                    <p style="margin: 1rem 0 0.75rem 0;"><strong>Ver eventos recientes de error:</strong></p>
+                    <code style="display: block; background: var(--bg-secondary); padding: 0.75rem; border-radius: 6px;">Get-EventLog -LogName Application -EntryType Error -Newest 20</code>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1rem; border-color: var(--accent-primary);">
+                <h3><i class="fab fa-github" aria-hidden="true"></i> Herramientas del Autor</h3>
+                <p>Scripts y utilidades de mantenimiento para Windows desarrolladas por el autor de Log Analyzer.</p>
+                
+                <a href="https://github.com/TheInkReaper" target="_blank" class="resource-link" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; margin-top: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <i class="fab fa-github" style="font-size: 2rem; color: var(--text-primary);"></i>
+                    <div>
+                        <strong style="font-size: 1rem;">github.com/TheInkReaper</strong><br>
+                        <span style="color: var(--text-muted);">Scripts de limpieza, reparación del sistema, y más herramientas de diagnóstico.</span>
+                    </div>
+                </a>
             </div>
         </div>
     </main>
 
     <script>
+        // ============================================
+        // NAVEGACIÓN
+        // ============================================
         const tabs = document.querySelectorAll('.tab-content');
         const navButtons = document.querySelectorAll('.nav-button');
+
         function showTab(tabId, sectionId = null) {
-            tabs.forEach(tab => tab.id === tabId ? tab.classList.remove('hidden') : tab.classList.add('hidden'));
-            navButtons.forEach(button => button.getAttribute('onclick').includes(`'${tabId}'`) ? button.classList.add('active') : button.classList.remove('active'));
+            // Cambiar tabs
+            tabs.forEach(tab => {
+                tab.classList.toggle('hidden', tab.id !== tabId);
+            });
+            
+            // Actualizar navegación
+            navButtons.forEach(button => {
+                const isActive = button.getAttribute('onclick')?.includes(`'${tabId}'`);
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-current', isActive ? 'page' : 'false');
+            });
+            
+            // Scroll a sección específica
             if (sectionId) {
-                document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
             }
         }
 
+        // ============================================
+        // MANEJO DE ARCHIVOS
+        // ============================================
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('log-file');
         const pasteZone = document.getElementById('paste-zone');
         const logOutput = document.getElementById('log-output');
-        const filterOptions = document.querySelectorAll('input[name="filter-option"]');
         const summarySection = document.getElementById('summary-section');
         const summaryOutput = document.getElementById('summary-output');
-        const copySummaryBtn = document.getElementById('copy-summary-btn');
         const contextInfo = document.getElementById('context-info');
-        let currentLogContext = { text: '', filename: '' };
+        const statsBar = document.getElementById('stats-bar');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const progressFill = document.getElementById('progress-fill');
 
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+        const CHUNK_SIZE = 50000; // Líneas por chunk para archivos grandes
+
+        let currentLogContext = { text: '', filename: '', lines: [] };
+        let currentSearchTerm = '';
+
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
         });
-        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-        pasteZone.addEventListener('paste', (e) => setTimeout(() => handleText(e.target.value), 0));
-        pasteZone.addEventListener('blur', (e) => e.target.value && handleText(e.target.value));
-        filterOptions.forEach(radio => radio.addEventListener('change', () => currentLogContext.text && analyzeLog(currentLogContext.text, currentLogContext.filename)));
-        copySummaryBtn.addEventListener('click', copySummary);
+
+        // Keyboard accessibility para drop zone
+        dropZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+        pasteZone.addEventListener('input', debounce((e) => {
+            if (e.target.value.trim()) {
+                handleText(e.target.value, 'texto_pegado.txt');
+            }
+        }, 500));
+
+        // Filtros
+        document.querySelectorAll('input[name="filter-option"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (currentLogContext.text) {
+                    renderLog();
+                }
+            });
+        });
+
+        document.getElementById('show-line-numbers').addEventListener('change', () => {
+            if (currentLogContext.text) {
+                renderLog();
+            }
+        });
+
+        // Búsqueda con Ctrl+F
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'f') {
+                const searchInput = document.getElementById('search-input');
+                if (document.getElementById('analyzer').classList.contains('hidden')) return;
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        document.getElementById('search-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                searchInLog();
+            }
+        });
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
 
         function handleFile(file) {
+            // Verificar tamaño
+            if (file.size > MAX_FILE_SIZE) {
+                showError(`El archivo es muy grande (${formatBytes(file.size)}). El máximo recomendado es 10 MB. Considera filtrar el archivo primero.`);
+                return;
+            }
+
+            // Verificar tipo
+            const validExtensions = ['.log', '.txt', '.csv', '.xml'];
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!validExtensions.includes(ext)) {
+                showError(`Formato no soportado (${ext}). Usa archivos .log, .txt, .csv o .xml.`);
+                return;
+            }
+
+            showLoading(true);
+
             const reader = new FileReader();
-            reader.onload = (e) => handleText(e.target.result, file.name);
+            
+            reader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressFill.style.width = percent + '%';
+                }
+            };
+
+            reader.onload = (e) => {
+                showLoading(false);
+                handleText(e.target.result, file.name, file.size);
+            };
+
+            reader.onerror = () => {
+                showLoading(false);
+                showError('Error al leer el archivo. Verifica que no esté en uso por otro programa.');
+            };
+
             reader.readAsText(file);
         }
 
-        function handleText(text, filename = 'pasted_text.txt') {
-            currentLogContext = { text, filename };
-            pasteZone.value = text;
-            analyzeLog(text, filename);
-        }
-
-        function detectProgramContext(text, filename) {
-            if (filename && !['log.txt', 'pasted_text.txt', 'debug.log'].includes(filename.toLowerCase())) {
-                return filename.split('.').slice(0, -1).join('.');
+        function handleText(text, filename = 'texto_pegado.txt', fileSize = null) {
+            if (!text || !text.trim()) {
+                showError('El archivo está vacío o no contiene texto legible.');
+                return;
             }
-            const contextKeywords = [
-                /Starting game: (.*?)$/im,
-                /Initializing application: (.*?)$/im,
-                /Launcher for (.*?)$/im,
-                /Loading user profile '(.*?)'/im
-            ];
-            for (const regex of contextKeywords) {
-                const match = text.match(regex);
-                if (match && match[1]) return match[1].trim();
-            }
-            return 'windows';
-        }
 
-        function analyzeLog(text, filename) {
-            const filterType = document.querySelector('input[name="filter-option"]:checked').value;
             const lines = text.split('\n');
-            let outputHtml = '';
-            const findings = {};
-            const programContext = detectProgramContext(text, filename);
-            contextInfo.textContent = `Contexto detectado: ${programContext}`;
-
-            const errorKeywords = /\b(error|fail|critical|exception|denied|refused|fallo|fehler|erreur)\b/i;
-            const warningKeywords = /\b(warning|warn|deprecated|timeout|slow|could not|advertencia|achtung|avertissement)\b/i;
-            const codeRegex = /(0x[a-f0-9]{8,16}|\b[a-z_]+_error\b|\b[a-z_]+_exception\b|error code [0-9]+)/ig;
+            currentLogContext = { 
+                text, 
+                filename, 
+                lines,
+                fileSize: fileSize || new Blob([text]).size
+            };
             
-            lines.forEach(line => {
-                const isError = errorKeywords.test(line);
-                const isWarning = !isError && warningKeywords.test(line);
-                if (isError || isWarning) {
-                    const codes = [...line.matchAll(codeRegex)];
-                    let findingKey = 'Generic ' + (isError ? 'Error' : 'Warning');
-                    if (codes.length > 0) findingKey = codes[0][0].toLowerCase();
-                    if (!findings[findingKey]) {
-                        findings[findingKey] = { count: 0, type: isError ? 'error' : 'warning' };
-                    }
-                    findings[findingKey].count++;
-                }
-                if (filterType === 'highlight') {
-                    outputHtml += `<div class="${isError ? 'log-line-error' : isWarning ? 'log-line-warning' : ''}">${escapeHtml(line)}</div>`;
-                } else if (filterType === 'only' && (isError || isWarning)) {
-                    outputHtml += `<div class="${isError ? 'log-line-error' : 'log-line-warning'}">${escapeHtml(line)}</div>`;
-                }
-            });
-            logOutput.innerHTML = outputHtml || '<p class="text-gray-500">No se encontraron hallazgos.</p>';
-            renderSummary(findings, programContext);
+            pasteZone.value = lines.length > 1000 
+                ? lines.slice(0, 100).join('\n') + '\n\n... [' + (lines.length - 100) + ' líneas más] ...'
+                : text;
+            
+            analyzeAndRender();
         }
-        
-        function renderSummary(findings, programContext) {
-            if (Object.keys(findings).length > 0) {
-                summarySection.classList.remove('hidden');
-                let summaryHtml = '';
-                for (const key in findings) {
-                    const finding = findings[key];
-                    const colorClass = finding.type === 'error' ? 'text-red-400' : 'text-amber-400';
-                    let link, title;
-                    if (key.startsWith('0x8')) {
-                        link = `https://www.hresult.info/search?q=${encodeURIComponent(key)}`;
-                        title = "Buscar HRESULT en hresult.info";
-                    } else {
-                        const searchTerm = `${programContext} ${key}`;
-                        link = `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`;
-                        title = `Buscar "${searchTerm}" en Google`;
-                    }
-                    summaryHtml += `<div class="flex justify-between items-center"><a href="${link}" target="_blank" class="${colorClass} font-mono clickable-link" title="${title}">${escapeHtml(key)}</a><span class="text-gray-400">encontrado <strong>${finding.count}</strong> veces</span></div>`;
-                }
-                summaryOutput.innerHTML = summaryHtml;
-            } else {
-                summarySection.classList.add('hidden');
+
+        function showLoading(show) {
+            loadingIndicator.style.display = show ? 'block' : 'none';
+            if (show) {
+                progressFill.style.width = '0%';
+                logOutput.innerHTML = '';
             }
         }
 
-        function copySummary() {
-            const summaryText = Array.from(summaryOutput.children).map(div => {
-                return `${div.children[0].textContent}: ${div.children[1].textContent}`;
-            }).join('\n');
-            navigator.clipboard.writeText(summaryText).then(() => {
-                copySummaryBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copiado';
-                setTimeout(() => { copySummaryBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Copiar'; }, 2000);
+        function showError(message) {
+            logOutput.innerHTML = `
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>${escapeHtml(message)}</div>
+                </div>
+            `;
+            statsBar.classList.add('hidden');
+            summarySection.classList.add('hidden');
+        }
+
+        // ============================================
+        // ANÁLISIS DE LOGS
+        // ============================================
+        
+        // Patrones de detección mejorados
+        const ERROR_PATTERNS = [
+            /\b(error|fail(?:ed|ure)?|critical|fatal|exception|crash|denied|refused|abort(?:ed)?|invalid|corrupt(?:ed)?)\b/i,
+            /\b(fallo|fehler|erreur|errore|erro)\b/i, // Multilingüe
+            /\bE\/\w+:/i, // Android logcat
+            /^\s*at\s+[\w.$]+\(.*:\d+\)/i, // Stack traces
+        ];
+
+        const WARNING_PATTERNS = [
+            /\b(warning|warn|deprecated|timeout|timed?\s*out|slow|could not|unable to|cannot|can't|couldn't|skip(?:ped|ping)?|missing|not found)\b/i,
+            /\b(advertencia|achtung|avertissement|avviso|aviso)\b/i, // Multilingüe
+            /\bW\/\w+:/i, // Android logcat
+        ];
+
+        // Patrones de códigos de error
+        const CODE_PATTERNS = [
+            /(0x[89a-f][0-9a-f]{7})/gi,                    // HRESULT (0x8... y 0x9...)
+            /(0xc[0-9a-f]{7})/gi,                          // NTSTATUS (0xc...)
+            /\b(error\s*(?:code)?[:\s]*(\d{3,5}))\b/gi,    // Error code 1234
+            /\b([A-Z_]+_(?:ERROR|EXCEPTION|FAILURE))\b/g,  // NAMED_ERROR
+            /\b(E_[A-Z_]+)\b/g,                            // E_FAIL, E_INVALIDARG
+            /\b(STATUS_[A-Z_]+)\b/g,                       // STATUS_ACCESS_DENIED
+            /\b(EXCEPTION_[A-Z_]+)\b/g,                    // EXCEPTION_ACCESS_VIOLATION
+            /\b(NTSTATUS|HRESULT)[:\s]*(0x[0-9a-f]+)/gi,   // Prefijados
+        ];
+
+        // Patrones de contexto/programa
+        const CONTEXT_PATTERNS = [
+            { regex: /unity/i, name: 'Unity Engine' },
+            { regex: /unreal|UE[45]/i, name: 'Unreal Engine' },
+            { regex: /steam/i, name: 'Steam' },
+            { regex: /nvidia|nvwgf|nvcuda/i, name: 'NVIDIA Driver' },
+            { regex: /amd|ati|radeon/i, name: 'AMD/ATI Driver' },
+            { regex: /directx|d3d|dxgi/i, name: 'DirectX' },
+            { regex: /vulkan|vk[A-Z]/i, name: 'Vulkan' },
+            { regex: /\.net|clr|mscorlib/i, name: '.NET Runtime' },
+            { regex: /java\.|jvm|jre|jdk/i, name: 'Java' },
+            { regex: /python|\.py:/i, name: 'Python' },
+            { regex: /node|npm|v8::/i, name: 'Node.js' },
+            { regex: /chrome|chromium/i, name: 'Chromium' },
+            { regex: /electron/i, name: 'Electron' },
+        ];
+
+        let analysisResults = {
+            errors: 0,
+            warnings: 0,
+            findings: {},
+            context: 'General'
+        };
+
+        function analyzeAndRender() {
+            const { lines, filename, fileSize } = currentLogContext;
+            
+            // Reset resultados
+            analysisResults = {
+                errors: 0,
+                warnings: 0,
+                findings: {},
+                context: detectContext(currentLogContext.text, filename)
+            };
+
+            // Analizar cada línea
+            const lineAnalysis = lines.map((line, index) => {
+                const isError = ERROR_PATTERNS.some(p => p.test(line));
+                const isWarning = !isError && WARNING_PATTERNS.some(p => p.test(line));
+                
+                if (isError) analysisResults.errors++;
+                if (isWarning) analysisResults.warnings++;
+
+                // Extraer códigos
+                if (isError || isWarning) {
+                    extractCodes(line, isError ? 'error' : 'warning');
+                }
+
+                return { line, isError, isWarning, lineNumber: index + 1 };
+            });
+
+            currentLogContext.analysis = lineAnalysis;
+
+            // Actualizar estadísticas
+            updateStats(lines.length, fileSize);
+            
+            // Renderizar
+            renderLog();
+            renderSummary();
+        }
+
+        function extractCodes(line, type) {
+            CODE_PATTERNS.forEach(pattern => {
+                // Reset lastIndex para regex global
+                pattern.lastIndex = 0;
+                let match;
+                while ((match = pattern.exec(line)) !== null) {
+                    const code = (match[2] || match[1]).toLowerCase();
+                    if (!analysisResults.findings[code]) {
+                        analysisResults.findings[code] = { count: 0, type };
+                    }
+                    analysisResults.findings[code].count++;
+                }
             });
         }
 
-        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+        function detectContext(text, filename) {
+            // Primero intentar desde el nombre del archivo
+            if (filename && !['log.txt', 'texto_pegado.txt', 'debug.log'].includes(filename.toLowerCase())) {
+                const baseName = filename.replace(/\.[^.]+$/, '');
+                // Evitar nombres genéricos
+                if (baseName.length > 3 && !/^(log|error|debug|output|crash)$/i.test(baseName)) {
+                    return baseName;
+                }
+            }
 
-        const startBtn = document.getElementById('start-monitoring');
-        const stopBtn = document.getElementById('stop-monitoring');
-        const statusDiv = document.getElementById('monitoring-status');
-        const liveLogOutput = document.getElementById('live-log-output');
-        let monitoringInterval;
-        let capturedLog = [];
+            // Detectar por contenido
+            for (const { regex, name } of CONTEXT_PATTERNS) {
+                if (regex.test(text)) {
+                    return name;
+                }
+            }
 
-        startBtn.addEventListener('click', () => {
-            startBtn.disabled = true; stopBtn.disabled = false;
-            statusDiv.textContent = 'Estado: Simulando captura...';
-            statusDiv.classList.replace('text-amber-400', 'text-green-400');
-            liveLogOutput.innerHTML = '';
-            capturedLog = [];
-            monitoringInterval = setInterval(generateMockLog, 1500);
-        });
+            // Buscar patrones específicos en el texto
+            const appMatch = text.match(/(?:application|app|process|module)[:\s]+["']?([^"'\n\r,]+)/i);
+            if (appMatch) {
+                return appMatch[1].trim();
+            }
 
-        stopBtn.addEventListener('click', () => {
-            startBtn.disabled = false; stopBtn.disabled = true;
-            clearInterval(monitoringInterval);
-            generateCrashReport();
-        });
-
-        function generateMockLog() {
-            const events = [ 'INFO: Initializing subsystem A...', 'INFO: Loading textures...', 'DEBUG: Shader compilation successful.', 'WARNING: High memory usage detected.', 'INFO: Physics engine started.', 'INFO: User input received.', 'ERROR: NullReferenceException at 0x7FFAC8B0.', 'CRITICAL: Unhandled exception caught.' ];
-            const event = events[Math.floor(Math.random() * events.length)];
-            const logLine = `${new Date().toISOString()} - ${event}`;
-            capturedLog.push(logLine);
-            const p = document.createElement('p');
-            p.textContent = logLine;
-            if (event.includes('ERROR') || event.includes('CRITICAL')) p.className = 'text-red-400';
-            else if (event.includes('WARNING')) p.className = 'text-amber-400';
-            else p.className = 'text-gray-400';
-            liveLogOutput.appendChild(p);
-            liveLogOutput.scrollTop = liveLogOutput.scrollHeight;
+            return 'Windows/Sistema';
         }
 
-        function generateCrashReport() {
-            const reportContent = "Crash Report (Simulation) - Log Analyzer\n==========================================\n" + capturedLog.join('\n');
-            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+        function updateStats(totalLines, fileSize) {
+            statsBar.classList.remove('hidden');
+            document.getElementById('stat-total').textContent = `${totalLines.toLocaleString()} líneas`;
+            document.getElementById('stat-errors').textContent = `${analysisResults.errors} errores`;
+            document.getElementById('stat-warnings').textContent = `${analysisResults.warnings} warnings`;
+            document.getElementById('stat-size').textContent = formatBytes(fileSize);
+        }
+
+        function renderLog() {
+            const { analysis } = currentLogContext;
+            if (!analysis) return;
+
+            const filterType = document.querySelector('input[name="filter-option"]:checked').value;
+            const showLineNumbers = document.getElementById('show-line-numbers').checked;
+            
+            let html = '';
+            let renderedLines = 0;
+            const maxRender = 5000; // Límite para evitar bloquear el navegador
+
+            for (const { line, isError, isWarning, lineNumber } of analysis) {
+                // Filtrar según opción
+                if (filterType === 'only' && !isError && !isWarning) continue;
+                
+                if (renderedLines >= maxRender) {
+                    html += `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">... Se muestran las primeras ${maxRender} líneas. Usa la búsqueda para encontrar contenido específico.</div>`;
+                    break;
+                }
+
+                const lineClass = isError ? 'log-line log-line-error' : (isWarning ? 'log-line log-line-warning' : 'log-line');
+                const lineNumHtml = showLineNumbers 
+                    ? `<span class="log-line-number">${lineNumber}</span>` 
+                    : '';
+                
+                let displayLine = escapeHtml(line);
+                
+                // Resaltar búsqueda
+                if (currentSearchTerm) {
+                    const regex = new RegExp(`(${escapeRegex(currentSearchTerm)})`, 'gi');
+                    displayLine = displayLine.replace(regex, '<span class="highlight-match">$1</span>');
+                }
+
+                html += `<div class="${lineClass}">${lineNumHtml}${displayLine}</div>`;
+                renderedLines++;
+            }
+
+            if (!html) {
+                html = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No se encontraron errores ni warnings</p></div>';
+            }
+
+            logOutput.innerHTML = html;
+        }
+
+        function renderSummary() {
+            const { findings, context } = analysisResults;
+            const findingKeys = Object.keys(findings);
+
+            if (findingKeys.length === 0) {
+                summarySection.classList.add('hidden');
+                return;
+            }
+
+            summarySection.classList.remove('hidden');
+            contextInfo.innerHTML = `<i class="fas fa-tag"></i> Contexto detectado: <strong>${escapeHtml(context)}</strong>`;
+
+            // Ordenar por cantidad
+            findingKeys.sort((a, b) => findings[b].count - findings[a].count);
+
+            let html = '';
+            for (const code of findingKeys) {
+                const { count, type } = findings[code];
+                const link = generateSearchLink(code, context);
+                const colorClass = type === 'error' ? 'error' : 'warning';
+                
+                html += `
+                    <div class="finding-item">
+                        <a href="${link}" target="_blank" class="finding-code ${colorClass}" title="Buscar información sobre este código">
+                            ${escapeHtml(code)}
+                        </a>
+                        <span class="finding-count">${count}×</span>
+                    </div>
+                `;
+            }
+
+            summaryOutput.innerHTML = html;
+        }
+
+        function generateSearchLink(code, context) {
+            const cleanCode = code.trim();
+            
+            // HRESULT
+            if (/^0x[89][0-9a-f]{7}$/i.test(cleanCode)) {
+                return `https://www.hresult.info/search?q=${encodeURIComponent(cleanCode)}`;
+            }
+            
+            // NTSTATUS
+            if (/^0xc[0-9a-f]{7}$/i.test(cleanCode)) {
+                return `https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55`;
+            }
+            
+            // Búsqueda genérica con contexto
+            const searchTerm = `${context} ${cleanCode}`;
+            return `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`;
+        }
+
+        // ============================================
+        // BÚSQUEDA
+        // ============================================
+        function searchInLog() {
+            const searchInput = document.getElementById('search-input');
+            currentSearchTerm = searchInput.value.trim();
+            
+            if (!currentSearchTerm || !currentLogContext.text) return;
+            
+            renderLog();
+            
+            // Scroll al primer resultado
+            const firstMatch = logOutput.querySelector('.highlight-match');
+            if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            currentSearchTerm = '';
+            if (currentLogContext.text) {
+                renderLog();
+            }
+        }
+
+        // ============================================
+        // EXPORTAR Y COPIAR
+        // ============================================
+        function copySummary() {
+            const { findings, context } = analysisResults;
+            const lines = [`Análisis de Log - Contexto: ${context}`, ''];
+            
+            for (const [code, { count, type }] of Object.entries(findings)) {
+                lines.push(`[${type.toUpperCase()}] ${code}: ${count} ocurrencias`);
+            }
+
+            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+                const btn = document.getElementById('copy-summary-btn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                }, 2000);
+            });
+        }
+
+        function exportAnalysis() {
+            const { findings, context, errors, warnings } = analysisResults;
+            const { filename, lines } = currentLogContext;
+            
+            const report = [
+                '═══════════════════════════════════════════════════════════════',
+                '                    LOG ANALYZER - INFORME',
+                '═══════════════════════════════════════════════════════════════',
+                '',
+                `Archivo: ${filename}`,
+                `Contexto detectado: ${context}`,
+                `Fecha de análisis: ${new Date().toLocaleString()}`,
+                '',
+                '───────────────────────────────────────────────────────────────',
+                '                        ESTADÍSTICAS',
+                '───────────────────────────────────────────────────────────────',
+                '',
+                `Total de líneas: ${lines.length.toLocaleString()}`,
+                `Errores encontrados: ${errors}`,
+                `Warnings encontrados: ${warnings}`,
+                '',
+                '───────────────────────────────────────────────────────────────',
+                '                    CÓDIGOS DETECTADOS',
+                '───────────────────────────────────────────────────────────────',
+                ''
+            ];
+
+            if (Object.keys(findings).length > 0) {
+                for (const [code, { count, type }] of Object.entries(findings)) {
+                    report.push(`  [${type.toUpperCase().padEnd(7)}] ${code.padEnd(30)} ${count}×`);
+                }
+            } else {
+                report.push('  No se detectaron códigos de error específicos.');
+            }
+
+            report.push('', '═══════════════════════════════════════════════════════════════');
+            report.push('  Generado por Log Analyzer - TheInkReaper');
+            report.push('═══════════════════════════════════════════════════════════════');
+
+            const blob = new Blob([report.join('\n')], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-            const filename = `SimulatedCrashReport_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.log`;
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = `LogAnalysis_${filename.replace(/\.[^.]+$/, '')}_${new Date().toISOString().slice(0,10)}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            statusDiv.innerHTML = `Estado: ¡Informe simulado generado! Se ha guardado en tu carpeta de <strong>Descargas</strong>.`;
-            statusDiv.classList.replace('text-green-400', 'text-amber-400');
         }
-        
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Inicializar
         showTab('welcome');
     </script>
 </body>
